@@ -1,0 +1,20 @@
+import librosa
+import numpy as np
+import tempfile
+
+def extract_features(file):
+
+    # Case 1: If uploaded file (has .read)
+    if hasattr(file, "read"):
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            tmp.write(file.read())
+            file_path = tmp.name
+
+    # Case 2: If file is string (sample.wav)
+    else:
+        file_path = file
+
+    audio, sr = librosa.load(file_path, res_type='kaiser_fast')
+    mfcc = np.mean(librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=40).T, axis=0)
+
+    return mfcc.reshape(1, -1)

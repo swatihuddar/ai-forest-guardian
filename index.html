@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Forest Guardian AI</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background-color: #f0f8f5;
+        }
+
+        h1 {
+            color: green;
+        }
+
+        .box {
+            background: white;
+            padding: 20px;
+            margin: 20px auto;
+            width: 350px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px gray;
+        }
+
+        button {
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            background: green;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .alert {
+            color: red;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .safe {
+            color: green;
+            font-weight: bold;
+        }
+
+        .zones {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+
+        .zone {
+            padding: 20px;
+            width: 80px;
+            border-radius: 10px;
+            background: lightgray;
+        }
+
+        .active {
+            background: red;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🌿 Forest Guardian AI</h1>
+
+<div class="box">
+    <h3>Upload Audio</h3>
+    <input type="file" id="audioFile" accept="audio/*"><br><br>
+    <button onclick="analyze()">Analyze Sound</button>
+</div>
+
+<div class="box" id="result">
+    <h3>Result will appear here</h3>
+</div>
+
+<audio id="alarmSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+
+<script>
+function analyze() {
+
+    let fileInput = document.getElementById("audioFile");
+
+    if (fileInput.files.length === 0) {
+        alert("Please upload an audio file!");
+        return;
+    }
+
+    let fileName = fileInput.files[0].name.toLowerCase();
+
+    let sound = "Safe";
+
+    if (fileName.includes("gun")) {
+        sound = "Gunshot";
+    } 
+    else if (fileName.includes("chain")) {
+        sound = "Chainsaw";
+    } 
+    else if (fileName.includes("vehicle")) {
+        sound = "Vehicle";
+    }
+
+    let zones = ["A", "B", "C"];
+    let zone = zones[Math.floor(Math.random() * zones.length)];
+
+    let confidence = Math.floor(Math.random() * 30) + 70;
+
+    let output = "<h3>Result</h3>";
+    output += "Detected Sound: " + sound + "<br>";
+    output += "Confidence: " + confidence + "%<br>";
+    output += "Zone: " + zone + "<br><br>";
+
+    // Zone UI
+    output += "<div class='zones'>";
+    zones.forEach(z => {
+        if (z === zone) {
+            output += `<div class='zone active'>Zone ${z}</div>`;
+        } else {
+            output += `<div class='zone'>Zone ${z}</div>`;
+        }
+    });
+    output += "</div><br>";
+
+    if (sound !== "Safe") {
+
+        document.getElementById("alarmSound").play();
+
+        output += "<span class='alert'>🚨 ALERT DETECTED!</span><br>";
+        output += "<span id='sms'>📩 Sending SMS...</span><br>";
+        output += "<span id='call'>📞 Making Call...</span><br>";
+
+        document.getElementById("result").innerHTML = output;
+
+        // ⏳ Simulate delay
+        setTimeout(() => {
+            document.getElementById("sms").innerHTML = "✅ SMS Sent";
+        }, 1500);
+
+        setTimeout(() => {
+            document.getElementById("call").innerHTML = "✅ Call Connected";
+        }, 2500);
+
+        // Backend call
+        fetch("http://127.0.0.1:5000/alert", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                sound: sound,
+                zone: zone,
+                confidence: confidence
+            })
+        });
+
+    } else {
+        output += "<span class='safe'>✅ Forest is Safe</span>";
+        document.getElementById("result").innerHTML = output;
+    }
+}
+</script>
+
+</body>
+</html>
